@@ -5,6 +5,8 @@
 /* Used to set slave for remote KB if VUSB detect doesn't work. */
 // #define KEYBOARD_SLAVE
 
+#define TAPPING_TERM 200
+
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0x6E61
 #define PRODUCT_ID      0x6061
@@ -32,3 +34,8 @@
 /* Additional optional encoder pins */
 // #define ENCODERS_PAD_A { D1, D0 } //Can only be used if I2C is not used
 // #define ENCODERS_PAD_B { D3, D2 } //Can only be used if serial (exp) is not used
+
+/* Define Encoder Pins*/
+
+#define ENCODERS_PAD_A { B2 }
+#define ENCODERS_PAD_B { B3 }

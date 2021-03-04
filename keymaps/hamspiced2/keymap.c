@@ -17,35 +17,45 @@
  */
 #include QMK_KEYBOARD_H
 #include <stdio.h>
-#include <remote_kb.c>
+#include "action_layer.h"
+#include "remote_kb.h"
+#include "bitc_led.h"
 
-enum layer_names {
-  _MA,
-  _FUNC
-};
+#define _BASE     0
+#define _FUNC     1
 
 enum custom_keycodes {
-    KC_CUST = SAFE_RANGE,
+  PROG = SAFE_RANGE,
+};
+
+enum td_keycodes {
+    TD_ENTER_LAYER
+};
+
+// Tap Dance definitions
+qk_tap_dance_action_t tap_dance_actions[] = {
+    // Tap once for KP_ENTER, twice for _FUNC layer
+    [TD_ENTER_LAYER] = ACTION_TAP_DANCE_LAYER_TOGGLE(KC_KP_ENTER, 1),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  [_MA] = LAYOUT(
-           KC_NO, KC_NLCK,   KC_KP_SLASH, \
-  KC_KP_7, KC_KP_8,   KC_KP_9,   KC_KP_ASTERISK, \
-  KC_KP_4, KC_KP_5,   KC_KP_6,   KC_KP_MINUS, \
-  KC_KP_1, KC_KP_2,   KC_KP_3,   KC_KP_PLUS, \
-  KC_NO,   KC_KP_0,   KC_KP_DOT, KC_KP_ENTER  \
+  // Base layer (numpad)
+  [_BASE] = LAYOUT(
+           KC_NO,    KC_KP_ASTERISK, KC_KP_MINUS, \
+  KC_KP_7, KC_KP_8,  KC_KP_9,        KC_KP_PLUS, \
+  KC_KP_4, KC_KP_5,  KC_KP_6,        KC_NO, \
+  KC_KP_1, KC_KP_2,  KC_KP_3,        TD(TD_ENTER_LAYER), \
+  KC_NO,   KC_KP_0,  KC_KP_DOT,      KC_NO \
   ),
-// Function layer (numpad)
+  // Function layer (numpad)
   [_FUNC] = LAYOUT(
            KC_NO, RGB_TOG, KC_NO,
     KC_NO, KC_NO, RGB_MOD, KC_NO,
     KC_NO, KC_NO, RGB_HUI, KC_NO,
     KC_NO, KC_NO, RGB_SAI, KC_NO,
-    KC_NO,  KC_NO, RGB_VAI, TO(_MA)
+    PROG,  KC_NO, RGB_VAI, TO(_BASE)
   ),
 };
-
 
 void encoder_update_kb(uint8_t index, bool clockwise) {
     if (clockwise) {
@@ -56,7 +66,7 @@ void encoder_update_kb(uint8_t index, bool clockwise) {
 }
 
 #ifdef OLED_DRIVER_ENABLE
-oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_90; }
+oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_270; }
 
 #define TAP_FRAMES 2 // cycles through frames on keypress, 2 required
 #define IDLE_FRAMES 5
@@ -342,12 +352,11 @@ static void render_anim(void) {
         }
     }
 }
-
 // animate tap?
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     process_record_remote_kb(keycode, record);
     // check if non-mod
-    if ((keycode >= KC_KP_9 && keycode <= KC_KP_0) || (keycode >= KC_TAB && keycode <= KC_SLASH)) {
+    if ((keycode >= KC_KP_9 && keycode <= KC_KP_0) || (keycode >= KC_KP_DOT && keycode <= KC_KP_PLUS)) {
         if (record->event.pressed) {
             // display tap frames
             tap_anim_toggle = !tap_anim_toggle;
